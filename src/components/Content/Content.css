@@ -1,0 +1,14 @@
+.content_container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  height: calc(100% - 50px);
+  overflow: auto;
+  margin: 30px 80px;
+}
+
+@media only screen and (max-width: 715px) {
+  .content_container {
+    margin: 0 10px;
+  }
+}

@@ -1,0 +1,39 @@
+.sidebar_container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  background-color: var(--SidebarColor);
+  padding: 40px;
+}
+
+.sidebar_link-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar_link {
+  margin: 15px 0;
+  color: var(--BlackColor);
+  font: normal 24px "Roboto Mono", sans-serif;
+  text-decoration: none;
+}
+
+.sidebar_link.active,
+.sidebar_link-selected {
+  font: bold 24px "Roboto Mono", sans-serif;
+}
+
+.sidebar_link_logout {
+  position: fixed;
+  color: var(--BorderColor);
+  bottom: 10px;
+  font: normal 24px "Roboto Mono", sans-serif;
+  text-decoration: none;
+}
+
+@media only screen and (max-width: 850px) {
+  .sidebar_container {
+    display: none;
+  }
+}

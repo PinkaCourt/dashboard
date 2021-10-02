@@ -1,0 +1,59 @@
+.sidebar_button {
+  display: none;
+  min-height: 40px;
+  background-color: var(--HeaderColor);
+  cursor: pointer;
+  margin: auto;
+  padding: 0;
+  box-sizing: border-box;
+  border: 0px;
+  color: var(--BlackColor);
+  font: normal 26px "Roboto Mono", sans-serif;
+}
+
+.sidebar_list {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 140px;
+  margin: 5px 0;
+  background-color: var(--WhiteColor);
+  z-index: 2;
+}
+
+.sidebar_list-link {
+  margin: 5px 0;
+  padding: 0 5px;
+  font: normal 18px "Roboto Mono", sans-serif;
+  color: var(--UltraBlackColor);
+}
+
+@media only screen and (max-width: 850px) {
+  .sidebar_button {
+    display: block;
+  }
+}
+
+@media only screen and (max-width: 715px) {
+  .sidebar_button {
+    font-size: 16px;
+  }
+  .sidebar_list {
+    width: 90px;
+  }
+  .sidebar_list-link {
+    font-size: 14px;
+  }
+}
+
+@media only screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) {
+  .sidebar_button {
+    font-size: 14px;
+  }
+  .sidebar_list {
+    width: 80px;
+  }
+  .sidebar_list-link {
+    font-size: 12px;
+  }
+}
