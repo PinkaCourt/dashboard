@@ -49,6 +49,21 @@ export const getData = (userId: string, token: string) => {
     .catch((error) => error);
 };
 
+export const getMock = (userId: string, token: string) => {
+  const url = mockUrl + `?userId=${userId}`;
+
+  const params: RequestInit = {
+    method: "GET",
+    headers: {
+      "x-access-token": token,
+    },
+  };
+
+  return fetch(url, params)
+    .then((response) => response.json())
+    .catch((error) => error);
+};
+
 export const getProfile = (userId: string, token: string) => {
   const url = profileUrl + `?userId=${userId}`;
 
