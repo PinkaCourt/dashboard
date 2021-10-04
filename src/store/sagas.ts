@@ -3,6 +3,7 @@ import { call, fork, put, select, takeEvery } from "redux-saga/effects";
 import {
   signIn,
   signUp,
+  getMock,
   getData,
   getProfile,
   updateAvatar,
@@ -58,9 +59,17 @@ function* authorizationUser({
 }
 
 function* registerUser({ payload }: ReturnType<typeof A.registerUser>) {
-  yield call(signUp, payload.login, payload.password);
+  const { auth, accessToken } = yield call(
+    signUp,
+    payload.login,
+    payload.password
+  );
 
-  yield fork(A.authorizationUser, payload);
+  if (auth) {
+    yield call(getMock, payload.login, accessToken);
+
+    yield put(A.authorizationUser(payload));
+  }
 }
 
 function* getUserData() {
