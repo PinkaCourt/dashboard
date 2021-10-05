@@ -1,7 +1,7 @@
 import { createSelector } from "reselect";
 
 import { InitState } from "store/reducer";
-import * as T from "store/types";
+import { Statistic } from "store/types";
 
 const ONE_MONTH = 1;
 const FOUR_MONTH = 4;
@@ -10,78 +10,78 @@ export const selectToken = (state: InitState) => state.accessToken;
 export const selectAuth = (state: InitState) => state.auth;
 export const selectLogin = (state: InitState) => state.login;
 export const selectUser = (state: InitState) => state.user;
-export const selectStatist = (state: InitState) => state.statisticDD;
+export const selectStatistic = (state: InitState) => state.statisticDD;
 
-const selectSortedData = createSelector(selectStatist, (data) =>
-  data?.slice().sort((a, b) => a.date - b.date)
+const sortedStatistic = createSelector(selectStatistic, (statistic) => {
+  return statistic.slice().sort((a, b) => a.date - b.date);
+});
+
+export const lastDataSelector = createSelector(
+  sortedStatistic,
+  (statistic) => statistic[statistic.length - 1]
 );
 
-const selectLastDate = createSelector(
-  selectSortedData,
-  (data) => data[data.length - 1].date
+const lastTimestamp = createSelector(lastDataSelector, (statisticData) =>
+  statisticData ? statisticData.date : 0
 );
 
-const startMonthlyPeriod = new Date().setMonth(
-  new Date().getMonth() - ONE_MONTH // selectLastDate
+const startMonthlyPeriod = createSelector(lastTimestamp, (timestamp) =>
+  timestamp === 0
+    ? 0
+    : new Date(timestamp).setMonth(new Date(timestamp).getMonth() - ONE_MONTH)
 );
-const start4MonthlyPeriod = new Date().setMonth(
-  new Date().getMonth() - FOUR_MONTH //selectLastDate
-);
-const endPeriod = Date.now();
 
-const averageDSbyMonth = (ar: T.Statistic[]) => {
+const startQuarterlyPeriod = createSelector(lastTimestamp, (timestamp) =>
+  timestamp === 0
+    ? 0
+    : new Date(timestamp).setMonth(new Date(timestamp).getMonth() - FOUR_MONTH)
+);
+
+const averageDSbyMonth = (statistics: Statistic[]) => {
   let newData = [];
-  let accumulatorData = 0;
-  let count = 0;
-  for (let i = 0; i < ar.length; i++) {
-    if (i === 0) {
-      accumulatorData = parseFloat(ar[i].ds);
-      count = 1;
+  let accumulatorData = parseFloat(statistics[0].ds);
+  let count = 1;
+
+  for (let i = 1; i < statistics.length; i++) {
+    const thisDate = statistics[i].date;
+    const prevDate = statistics[i - 1].date;
+
+    const thisDay = {
+      day: new Date(thisDate).getDate(),
+      month: new Date(thisDate).getMonth(),
+    };
+
+    const prevDay = {
+      day: new Date(prevDate).getDate(),
+      month: new Date(prevDate).getMonth(),
+    };
+
+    if (thisDay.day === prevDay.day && thisDay.month === prevDay.month) {
+      accumulatorData = accumulatorData + parseFloat(statistics[i].ds);
+      count = count + 1;
     } else {
-      const thisDate = ar[i].date;
-      const prevDate = ar[i - 1].date;
-
-      const thisDay = new Date(thisDate).getDate();
-      const prevDay = new Date(prevDate).getDate();
-
-      const thisMonth = new Date(thisDate).getMonth();
-      const prevMonth = new Date(prevDate).getMonth();
-
-      if (thisDay === prevDay && thisMonth === prevMonth) {
-        accumulatorData = accumulatorData + parseFloat(ar[i].ds);
-        count = count + 1;
-      } else {
-        newData.push({
-          ds: accumulatorData / count,
-          month: prevMonth,
-          day: prevDay,
-        });
-        accumulatorData = 0;
-        count = 0;
-      }
+      newData.push({
+        ds: accumulatorData / count,
+        ...prevDay,
+      });
+      accumulatorData = 0;
+      count = 0;
     }
   }
 
   return newData;
 };
 
-export const monthlyData = createSelector(selectSortedData, (sortedData) =>
-  sortedData.filter(
-    (mnt) => mnt.date > startMonthlyPeriod && mnt.date < endPeriod
-  )
+export const monthlyStatistics = createSelector(
+  [sortedStatistic, startMonthlyPeriod],
+  (sortedData, start) => sortedData.filter(({ date }) => date > start)
 );
 
-export const FourMonthsData = createSelector(selectSortedData, (sortedData) =>
-  sortedData.filter(
-    (mnt) => mnt.date > start4MonthlyPeriod && mnt.date < endPeriod
-  )
+export const quarterlyStatistics = createSelector(
+  [sortedStatistic, startQuarterlyPeriod],
+  (sortedData, start) => sortedData.filter(({ date }) => date > start)
 );
 
-export const lastDatas = createSelector(
-  monthlyData,
-  (data) => data[data.length - 1]
-);
-
-export const selectAverageDatas = createSelector(FourMonthsData, (data) =>
+export const selectAverageDatas = createSelector(quarterlyStatistics, (data) =>
   averageDSbyMonth(data)
 );
