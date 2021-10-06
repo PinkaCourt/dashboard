@@ -37,6 +37,13 @@ const Chart = () => {
 
   const dragons = useSelector(selectAverageData);
 
+  const x = dragons.reduce(
+    (accumulator, currentValue) => accumulator.add(String(currentValue.month)),
+    new Set() as Set<string>
+  );
+
+  const axisX = Array.from(x);
+
   React.useEffect(() => {
     const { current } = canvasRef;
     const ctx = current && current.getContext("2d");
@@ -51,7 +58,6 @@ const Chart = () => {
       { text: "0", x: 40, y: 3 * 80 + 60 },
     ];
 
-    // начало рисования осей
     ctx.fillStyle = "black";
     ctx.lineWidth = 5.0;
     ctx.beginPath();
