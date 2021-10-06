@@ -10,23 +10,6 @@ const INDENT = 4 * STEP;
 const DAYS = 31;
 const axisY = ["20", "10", "0"];
 
-const toGraf = (
-  ctx: CanvasRenderingContext2D,
-  array: number[],
-  height: number
-) => {
-  ctx.beginPath();
-  ctx.moveTo(INDENT, height - INDENT);
-
-  array.reduce((accumulator, currentValue) => {
-    ctx.lineTo(accumulator, height - INDENT - currentValue);
-    return (accumulator = accumulator + STEP);
-  }, INDENT);
-
-  ctx.stroke();
-  ctx.closePath();
-};
-
 const Chart = () => {
   const [height, setHeight] = React.useState(0);
   const [width, setWidth] = React.useState(0);
@@ -43,6 +26,24 @@ const Chart = () => {
   );
 
   const axisX = Array.from(x);
+
+  const toGraf = React.useCallback(
+    (ctx: CanvasRenderingContext2D, array: Dragon[], height: number) => {
+      const dayStep = steps.x / DAYS;
+      const axisXpos = height - INDENT;
+
+      ctx.beginPath();
+
+      array.reduce((accumulator, currentValue) => {
+        ctx.lineTo(accumulator, axisXpos - (currentValue.ds * steps.y) / STEP);
+        return (accumulator += dayStep);
+      }, INDENT + array[0].day * dayStep);
+
+      ctx.stroke();
+      ctx.closePath();
+    },
+    [steps]
+  );
 
   React.useEffect(() => {
     const { current } = canvasRef;
@@ -69,11 +70,7 @@ const Chart = () => {
     ctx.stroke();
     ctx.closePath();
     //конец осей
-    toGraf(
-      ctx,
-      dragons.map((e) => e.ds),
-      height
-    );
+    toGraf(ctx, dragons, height);
     Y.map((e) => ctx.fillText(e.text, e.x, e.y));
 
     // стилизуем надпись
