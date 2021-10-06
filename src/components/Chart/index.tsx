@@ -46,40 +46,6 @@ const Chart = () => {
   );
 
   React.useEffect(() => {
-    const { current } = canvasRef;
-    const ctx = current && current.getContext("2d");
-
-    if (ctx == null) {
-      return;
-    }
-
-    const Y = [
-      { text: "20", x: 40, y: 1 * 80 + 60 },
-      { text: "10", x: 40, y: 2 * 80 + 60 },
-      { text: "0", x: 40, y: 3 * 80 + 60 },
-    ];
-
-    ctx.fillStyle = "black";
-    ctx.lineWidth = 5.0;
-    ctx.beginPath();
-
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, height);
-    ctx.moveTo(0, height);
-    ctx.lineTo(width, height);
-    ctx.stroke();
-    ctx.closePath();
-    //конец осей
-    toGraf(ctx, dragons, height);
-    Y.map((e) => ctx.fillText(e.text, e.x, e.y));
-
-    // стилизуем надпись
-    ctx.fillStyle = "#666666";
-    ctx.font = 'normal 24px "Roboto Mono"';
-    ctx.fillText("CLIENTS", INDENT, INDENT);
-  }, [dragons, height, width]);
-
-  React.useEffect(() => {
     const { current } = containerRef;
 
     if (current == null) {
@@ -96,6 +62,34 @@ const Chart = () => {
 
     setSteps({ x: X, y: Y });
   }, [containerRef]);
+
+  React.useEffect(() => {
+    const { current } = canvasRef;
+    const ctx = current && current.getContext("2d");
+
+    if (ctx == null) {
+      return;
+    }
+
+    ctx.fillStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.textAlign = "end";
+
+    toGraf(ctx, dragons, height);
+
+    ctx.fillStyle = "#333";
+    ctx.font = 'bold 24px "Roboto Mono"';
+
+    axisY.map((e, i) => ctx.fillText(e, INDENT, steps.y * (i + 1)));
+    axisX.map((e, i) =>
+      ctx.fillText(e, steps.x * (i + 1), steps.y * axisY.length)
+    );
+
+    ctx.fillStyle = "#666666";
+    ctx.font = 'normal 24px "Roboto Mono"';
+    ctx.textAlign = "start";
+    ctx.fillText("DRAGONS", INDENT, INDENT);
+  }, [axisX, dragons, height, width, steps, toGraf]);
 
   return (
     <div className="chart" ref={containerRef}>
