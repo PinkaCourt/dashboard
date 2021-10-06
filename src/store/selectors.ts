@@ -48,12 +48,12 @@ const averageDSbyMonth = (statistics: Statistic[]) => {
 
     const thisDay = {
       day: new Date(thisDate).getDate(),
-      month: new Date(thisDate).getMonth(),
+      month: new Date(thisDate).toLocaleDateString("en-US", { month: "short" }),
     };
 
     const prevDay = {
       day: new Date(prevDate).getDate(),
-      month: new Date(prevDate).getMonth(),
+      month: new Date(prevDate).toLocaleDateString("en-US", { month: "short" }),
     };
 
     if (thisDay.day === prevDay.day && thisDay.month === prevDay.month) {
@@ -82,6 +82,6 @@ export const quarterlyStatistics = createSelector(
   (sortedData, start) => sortedData.filter(({ date }) => date > start)
 );
 
-export const selectAverageDatas = createSelector(quarterlyStatistics, (data) =>
+export const selectAverageData = createSelector(quarterlyStatistics, (data) =>
   averageDSbyMonth(data)
 );
