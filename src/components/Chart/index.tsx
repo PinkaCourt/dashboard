@@ -5,11 +5,10 @@ import { selectAverageData } from "store/selectors";
 import { Dragon } from "store/types";
 import "./Chart.css";
 
-const step = 10;
-
-const initIndent = 80;
-const initX = 2 * step;
-const initY = 4 * step;
+const STEP = 10;
+const INDENT = 4 * STEP;
+const DAYS = 31;
+const axisY = ["20", "10", "0"];
 
 const toGraf = (
   ctx: CanvasRenderingContext2D,
@@ -17,25 +16,26 @@ const toGraf = (
   height: number
 ) => {
   ctx.beginPath();
-  ctx.moveTo(initIndent, height - initIndent);
+  ctx.moveTo(INDENT, height - INDENT);
 
   array.reduce((accumulator, currentValue) => {
-    ctx.lineTo(accumulator, height - initIndent - currentValue);
-    return (accumulator = accumulator + step);
-  }, initIndent);
+    ctx.lineTo(accumulator, height - INDENT - currentValue);
+    return (accumulator = accumulator + STEP);
+  }, INDENT);
 
   ctx.stroke();
   ctx.closePath();
 };
 
 const Chart = () => {
-  const [heightChart, setHeightChart] = React.useState(0);
-  const [widthChart, setWidthChart] = React.useState(0);
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [height, setHeight] = React.useState(0);
+  const [width, setWidth] = React.useState(0);
+  const [steps, setSteps] = React.useState({ x: 0, y: 0 });
 
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const averageDatas = useSelector(selectAverageData);
+  const dragons = useSelector(selectAverageData);
 
   React.useEffect(() => {
     const { current } = canvasRef;
@@ -57,26 +57,25 @@ const Chart = () => {
     ctx.beginPath();
 
     ctx.moveTo(0, 0);
-    ctx.lineTo(0, heightChart);
-    ctx.moveTo(0, heightChart);
-    ctx.lineTo(widthChart, heightChart);
+    ctx.lineTo(0, height);
+    ctx.moveTo(0, height);
+    ctx.lineTo(width, height);
     ctx.stroke();
     ctx.closePath();
     //конец осей
     toGraf(
       ctx,
-      averageDatas.map((e) => e.ds),
-      heightChart
+      dragons.map((e) => e.ds),
+      height
     );
     Y.map((e) => ctx.fillText(e.text, e.x, e.y));
 
     // стилизуем надпись
     ctx.fillStyle = "#666666";
     ctx.font = 'normal 24px "Roboto Mono"';
-    ctx.fillText("CLIENTS", initX, initY);
-  }, [averageDatas, heightChart, widthChart]);
+    ctx.fillText("CLIENTS", INDENT, INDENT);
+  }, [dragons, height, width]);
 
-  // определяем размер канваса по размеру контейнера
   React.useEffect(() => {
     const { current } = containerRef;
 
@@ -84,18 +83,20 @@ const Chart = () => {
       return;
     }
 
-    const intViewportWidth = window.innerWidth;
-    const intViewportHeight = window.innerHeight;
-    console.log("intViewportWidth", intViewportWidth);
-    console.log("intViewportHeight", intViewportHeight);
     const { height, width } = current.getBoundingClientRect();
-    setHeightChart(height);
-    setWidthChart(width);
+
+    setHeight(height);
+    setWidth(width);
+
+    const X = (width - INDENT) / 4;
+    const Y = (height - INDENT) / 3;
+
+    setSteps({ x: X, y: Y });
   }, [containerRef]);
 
   return (
     <div className="chart" ref={containerRef}>
-      <canvas ref={canvasRef} width={widthChart} height={heightChart} />
+      <canvas ref={canvasRef} width={width} height={height} />
     </div>
   );
 };
