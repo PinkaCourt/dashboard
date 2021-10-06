@@ -1,7 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { selectAverageDatas } from "store/selectors";
+import { selectAverageData } from "store/selectors";
+import { Dragon } from "store/types";
 import "./Chart.css";
 
 const step = 10;
@@ -34,8 +35,7 @@ const Chart = () => {
 
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const averageDatas = useSelector(selectAverageDatas);
-  console.log("averageDatas", averageDatas);
+  const averageDatas = useSelector(selectAverageData);
 
   React.useEffect(() => {
     const { current } = canvasRef;
