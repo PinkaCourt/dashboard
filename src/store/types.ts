@@ -26,3 +26,9 @@ export type User = {
   email: string;
   name: null | string;
 };
+
+export type Dragon = {
+  day: number;
+  month: string;
+  ds: number;
+};

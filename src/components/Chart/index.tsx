@@ -1,41 +1,67 @@
 import React from "react";
 import { useSelector } from "react-redux";
 
-import { selectAverageDatas } from "store/selectors";
+import { selectAverageData } from "store/selectors";
+import { Dragon } from "store/types";
 import "./Chart.css";
 
-const step = 10;
-
-const initIndent = 80;
-const initX = 2 * step;
-const initY = 4 * step;
-
-const toGraf = (
-  ctx: CanvasRenderingContext2D,
-  array: number[],
-  height: number
-) => {
-  ctx.beginPath();
-  ctx.moveTo(initIndent, height - initIndent);
-
-  array.reduce((accumulator, currentValue) => {
-    ctx.lineTo(accumulator, height - initIndent - currentValue);
-    return (accumulator = accumulator + step);
-  }, initIndent);
-
-  ctx.stroke();
-  ctx.closePath();
-};
+const STEP = 10;
+const INDENT = 4 * STEP;
+const DAYS = 31;
+const axisY = ["20", "10", "0"];
 
 const Chart = () => {
-  const [heightChart, setHeightChart] = React.useState(0);
-  const [widthChart, setWidthChart] = React.useState(0);
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const [height, setHeight] = React.useState(0);
+  const [width, setWidth] = React.useState(0);
+  const [steps, setSteps] = React.useState({ x: 0, y: 0 });
 
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const averageDatas = useSelector(selectAverageDatas);
-  console.log("averageDatas", averageDatas);
+  const dragons = useSelector(selectAverageData);
+
+  const x = dragons.reduce(
+    (accumulator, currentValue) => accumulator.add(String(currentValue.month)),
+    new Set() as Set<string>
+  );
+
+  const axisX = Array.from(x);
+
+  const toGraf = React.useCallback(
+    (ctx: CanvasRenderingContext2D, array: Dragon[], height: number) => {
+      const dayStep = steps.x / DAYS;
+      const axisXpos = height - INDENT;
+
+      ctx.beginPath();
+
+      array.reduce((accumulator, currentValue) => {
+        ctx.lineTo(accumulator, axisXpos - (currentValue.ds * steps.y) / STEP);
+        return (accumulator += dayStep);
+      }, INDENT + array[0].day * dayStep);
+
+      ctx.stroke();
+      ctx.closePath();
+    },
+    [steps]
+  );
+
+  React.useEffect(() => {
+    const { current } = containerRef;
+
+    if (current == null) {
+      return;
+    }
+
+    const { height, width } = current.getBoundingClientRect();
+
+    setHeight(height);
+    setWidth(width);
+
+    const X = (width - INDENT) / 4;
+    const Y = (height - INDENT) / 3;
+
+    setSteps({ x: X, y: Y });
+  }, [containerRef]);
 
   React.useEffect(() => {
     const { current } = canvasRef;
@@ -45,57 +71,29 @@ const Chart = () => {
       return;
     }
 
-    const Y = [
-      { text: "20", x: 40, y: 1 * 80 + 60 },
-      { text: "10", x: 40, y: 2 * 80 + 60 },
-      { text: "0", x: 40, y: 3 * 80 + 60 },
-    ];
-
-    // начало рисования осей
     ctx.fillStyle = "black";
-    ctx.lineWidth = 5.0;
-    ctx.beginPath();
+    ctx.lineWidth = 4;
+    ctx.textAlign = "end";
 
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, heightChart);
-    ctx.moveTo(0, heightChart);
-    ctx.lineTo(widthChart, heightChart);
-    ctx.stroke();
-    ctx.closePath();
-    //конец осей
-    toGraf(
-      ctx,
-      averageDatas.map((e) => e.ds),
-      heightChart
+    toGraf(ctx, dragons, height);
+
+    ctx.fillStyle = "#333";
+    ctx.font = 'bold 24px "Roboto Mono"';
+
+    axisY.map((e, i) => ctx.fillText(e, INDENT, steps.y * (i + 1)));
+    axisX.map((e, i) =>
+      ctx.fillText(e, steps.x * (i + 1), steps.y * axisY.length)
     );
-    Y.map((e) => ctx.fillText(e.text, e.x, e.y));
 
-    // стилизуем надпись
     ctx.fillStyle = "#666666";
     ctx.font = 'normal 24px "Roboto Mono"';
-    ctx.fillText("CLIENTS", initX, initY);
-  }, [averageDatas, heightChart, widthChart]);
-
-  // определяем размер канваса по размеру контейнера
-  React.useEffect(() => {
-    const { current } = containerRef;
-
-    if (current == null) {
-      return;
-    }
-
-    const intViewportWidth = window.innerWidth;
-    const intViewportHeight = window.innerHeight;
-    console.log("intViewportWidth", intViewportWidth);
-    console.log("intViewportHeight", intViewportHeight);
-    const { height, width } = current.getBoundingClientRect();
-    setHeightChart(height);
-    setWidthChart(width);
-  }, [containerRef]);
+    ctx.textAlign = "start";
+    ctx.fillText("DRAGONS", INDENT, INDENT);
+  }, [axisX, dragons, height, width, steps, toGraf]);
 
   return (
     <div className="chart" ref={containerRef}>
-      <canvas ref={canvasRef} width={widthChart} height={heightChart} />
+      <canvas ref={canvasRef} width={width} height={height} />
     </div>
   );
 };
